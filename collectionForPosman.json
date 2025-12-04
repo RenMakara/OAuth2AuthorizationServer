@@ -1,0 +1,87 @@
+{
+  "info": {
+    "name": "Spring Authorization Server OAuth2",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Client B - Client Credentials",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/x-www-form-urlencoded"
+          }
+        ],
+        "auth": {
+          "type": "basic",
+          "basic": [
+            { "key": "username", "value": "backend-service" },
+            { "key": "password", "value": "secret123" }
+          ]
+        },
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            { "key": "grant_type", "value": "client_credentials" }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:8080/oauth2/token",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["oauth2", "token"]
+        }
+      }
+    },
+    {
+      "name": "Client A - Authorization Code Step 1 (Login)",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:8080/oauth2/authorize?response_type=code&client_id=frontend-client&redirect_uri=http://127.0.0.1:8082/login/oauth2/code/frontend-client&scope=openid profile&code_challenge=abc123&code_challenge_method=S256",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["oauth2", "authorize"],
+          "query": [
+            { "key": "response_type", "value": "code" },
+            { "key": "client_id", "value": "frontend-client" },
+            { "key": "redirect_uri", "value": "http://127.0.0.1:8082/login/oauth2/code/frontend-client" },
+            { "key": "scope", "value": "openid profile" },
+            { "key": "code_challenge", "value": "abc123" },
+            { "key": "code_challenge_method", "value": "S256" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Client A - Authorization Code Step 2 (Exchange Token)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/x-www-form-urlencoded" }
+        ],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            { "key": "grant_type", "value": "authorization_code" },
+            { "key": "code", "value": "{{authorization_code}}" },
+            { "key": "redirect_uri", "value": "http://127.0.0.1:8082/login/oauth2/code/frontend-client" },
+            { "key": "client_id", "value": "frontend-client" },
+            { "key": "code_verifier", "value": "abc123" }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:8080/oauth2/token",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["oauth2", "token"]
+        }
+      }
+    }
+  ]
+}
