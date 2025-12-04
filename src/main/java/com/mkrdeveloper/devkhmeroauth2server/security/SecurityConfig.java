@@ -21,7 +21,6 @@ import org.springframework.security.oauth2.server.authorization.client.Registere
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
 import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
-import org.springframework.security.oauth2.server.authorization.settings.OAuth2TokenFormat;
 import org.springframework.security.oauth2.server.authorization.settings.TokenSettings;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
@@ -50,6 +49,12 @@ public class SecurityConfig {
         return daoAuthenticationProvider;
     }
 
+    // ------------------------------------------------------------------------------------
+    // This beans I commented because it provide in-memory user management,
+    // which has been replaced with database-backed user details via UserDetailServiceImpl
+    // and UserRepository for persistent storage using Spring Data JPA.
+    // -------------------------------------------------------------------------------------
+
 //    @Bean
 //    public UserDetailsService userDetailsService() {
 //        UserDetails userDetails = User.withDefaultPasswordEncoder()
@@ -75,6 +80,7 @@ public class SecurityConfig {
 //                .build());
 //        return manager;
 //    }
+    // -------------------------------------------------------------------------------------
 
     @Bean
     public AuthorizationServerSettings authorizationServerSettings(){
@@ -123,12 +129,18 @@ public class SecurityConfig {
     @Order(2)
     public SecurityFilterChain webSecurity(HttpSecurity http) throws Exception{
 
-        http.authorizeHttpRequests(auth -> auth
-                .requestMatchers("/public").permitAll()
-                .anyRequest().authenticated());
+        http
+                .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/public", "/login", "/css/**").permitAll()
+                .anyRequest().authenticated()
+                );
 
 
-        http.formLogin(Customizer.withDefaults());
+
+        http.formLogin(form -> form
+                .loginPage("/login")
+                .permitAll()
+        );
         return http.build();
     }
 
@@ -140,7 +152,7 @@ public class SecurityConfig {
         RegisteredClient frontendClient = RegisteredClient
                 .withId(UUID.randomUUID().toString())
                 .clientId("frontend-client")
-                .clientAuthenticationMethod(ClientAuthenticationMethod.NONE)   // public client (no secret)
+                .clientAuthenticationMethod(ClientAuthenticationMethod.NONE)
                 .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
                 .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
                 .redirectUri("http://127.0.0.1:8082/login/oauth2/code/frontend-client")
@@ -153,7 +165,7 @@ public class SecurityConfig {
                         .build())
                 .clientSettings(ClientSettings.builder()
                         .requireProofKey(true) // PKCE REQUIRED
-                        .requireAuthorizationConsent(true)
+                        .requireAuthorizationConsent(true) // Authorization Consent REQUIRED
                         .build())
                 .build();
 

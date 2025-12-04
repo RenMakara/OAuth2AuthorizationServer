@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f7f9fb; }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
+
+<div class="w-full max-w-md p-8 space-y-6 bg-white rounded-xl shadow-2xl">
+    <h2 class="text-3xl font-extrabold text-center text-gray-900">Sign in to your account</h2>
+
+    <!-- Error Message Display -->
+    <!-- Spring Security automatically redirects back to /login?error if authentication fails -->
+    <div th:if="${param.error}" class="p-3 text-sm text-red-700 bg-red-100 rounded-lg" role="alert">
+        Invalid username or password. Please try again.
+    </div>
+
+    <!-- Logout Message Display -->
+    <div th:if="${param.logout}" class="p-3 text-sm text-green-700 bg-green-100 rounded-lg" role="alert">
+        You have been logged out successfully.
+    </div>
+
+    <!-- The form action MUST point to the default Spring Security filter chain path: /login -->
+    <form class="space-y-6" th:action="@{/login}" method="post">
+
+        <div>
+            <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
+            <div class="mt-1">
+                <input id="username" name="username" type="text" autocomplete="username" required
+                       class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            </div>
+        </div>
+
+        <div>
+            <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+            <div class="mt-1">
+                <input id="password" name="password" type="password" autocomplete="current-password" required
+                       class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            </div>
+        </div>
+
+        <!-- CRITICAL: CSRF Token inclusion -->
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+        <div>
+            <button type="submit"
+                    class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150">
+                Sign in
+            </button>
+        </div>
+    </form>
+</div>
+
+</body>
+</html>
